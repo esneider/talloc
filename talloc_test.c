@@ -42,6 +42,9 @@ int main( void ){
 	((int*)h)[123] = 456;
 	tfree(h);
 
+	(void)f;
+	(void)k;
+
 	return 0;
 }
 
