@@ -9,7 +9,7 @@
 #ifndef _TALLOC_H_
 #define _TALLOC_H_
 
-#include <stdlib.h>
+#include <stddef.h>
 
 
 /**

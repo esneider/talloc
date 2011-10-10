@@ -6,6 +6,7 @@
  * @author Dario Sneidermanis
  */
 
+#include <stdlib.h>
 #include "talloc.h"
 
 
