@@ -128,13 +128,13 @@ void tfree ( void* mem ) {
  */
 void* talloc_get_parent ( void* mem ) {
 
-    void*** i = mem;
+    void*** aux = mem;
 
-    if ( !mem || !((void**)mem)[-1] ) return NULL;
+    if ( !aux || !aux[-1] ) return NULL;
 
-    for ( i -= 3; i[2][1] == i; i = (void***)(i[2]) ) ;
+    for ( aux -= 3; aux[2][1] == aux; aux = (void***)(aux[2]) ) ;
 
-    return i[2] + 3;
+    return aux[2] + 3;
 }
 
 
@@ -165,8 +165,9 @@ void talloc_set_parent ( void* mem, void* parent ) {
 
         if ( ((void**)mem)[-2] )
             ((void***)mem)[-2][2] = (void**)mem - 3;
-    } else
+    } else {
         ((void**)mem)[-1] = ((void**)mem)[-2] = NULL;
+    }
 }
 
 
