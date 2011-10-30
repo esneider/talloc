@@ -21,14 +21,14 @@
  */
 void* talloc ( size_t size, void* parent ) {
 
-	void **mem = malloc( size + sizeof( void* ) * 3 );
-	if ( !mem ) return NULL;
+    void **mem = malloc( size + sizeof( void* ) * 3 );
+    if ( !mem ) return NULL;
 
-	mem[0] = mem[1] = mem[2] = NULL;
+    mem[0] = mem[1] = mem[2] = NULL;
 
-	talloc_set_parent( mem + 3, parent );
+    talloc_set_parent( mem + 3, parent );
 
-	return mem + 3;
+    return mem + 3;
 }
 
 
@@ -43,12 +43,12 @@ void* talloc ( size_t size, void* parent ) {
  */
 void* tcalloc ( size_t size, void* parent ) {
 
-	void **mem = calloc( 1, size + sizeof( void* ) * 3 );
-	if ( !mem ) return NULL;
+    void **mem = calloc( 1, size + sizeof( void* ) * 3 );
+    if ( !mem ) return NULL;
 
-	talloc_set_parent( mem + 3, parent );
+    talloc_set_parent( mem + 3, parent );
 
-	return mem + 3;
+    return mem + 3;
 }
 
 
@@ -62,21 +62,21 @@ void* tcalloc ( size_t size, void* parent ) {
  */
 void* trealloc ( void* mem, size_t size ) {
 
-	void ***aux = mem;
+    void ***aux = mem;
 
-	if ( !mem ) return talloc( size, NULL );
+    if ( !mem ) return talloc( size, NULL );
 
-	aux = realloc( aux - 3, size + sizeof( void* ) * 3 );
-	if ( !aux ) return NULL;
+    aux = realloc( aux - 3, size + sizeof( void* ) * 3 );
+    if ( !aux ) return NULL;
 
-	if ( aux + 3 != mem ) {
+    if ( aux + 3 != mem ) {
 
         if ( aux[0] ) aux[0][2] = aux;
         if ( aux[1] ) aux[1][2] = aux;
         if ( aux[2] ) aux[2][ aux[2][1] == (void***)mem - 3 ] = aux;
-	}
+    }
 
-	return aux + 3;
+    return aux + 3;
 }
 
 
@@ -87,11 +87,11 @@ void* trealloc ( void* mem, size_t size ) {
  */
 static void __tfree ( void** mem ) {
 
-	if ( !mem ) return;
+    if ( !mem ) return;
 
-	__tfree( mem[0] );
-	__tfree( mem[1] );
-	free( mem );
+    __tfree( mem[0] );
+    __tfree( mem[1] );
+    free( mem );
 }
 
 
@@ -102,13 +102,13 @@ static void __tfree ( void** mem ) {
  */
 void tfree ( void* mem ) {
 
-	if ( !mem ) return;
+    if ( !mem ) return;
 
-	talloc_set_parent( mem, NULL );
+    talloc_set_parent( mem, NULL );
 
-	__tfree( ((void**)mem)[-3] );
+    __tfree( ((void**)mem)[-3] );
 
-	free( (void**)mem - 3 );
+    free( (void**)mem - 3 );
 }
 
 
@@ -121,13 +121,13 @@ void tfree ( void* mem ) {
  */
 void* talloc_get_parent ( void* mem ) {
 
-	void*** i;
+    void*** i;
 
-	if ( !mem || !((void**)mem)[-1] ) return NULL;
+    if ( !mem || !((void**)mem)[-1] ) return NULL;
 
-	for ( i = (void***)mem - 3; i[2][1] == i; i = (void***)(i[2]) ) ;
+    for ( i = (void***)mem - 3; i[2][1] == i; i = (void***)(i[2]) ) ;
 
-	return i[2] + 3;
+    return i[2] + 3;
 }
 
 
@@ -140,26 +140,26 @@ void* talloc_get_parent ( void* mem ) {
  */
 void talloc_set_parent ( void* mem, void* parent ) {
 
-	if ( !mem ) return;
+    if ( !mem ) return;
 
-	if ( ((void**)mem)[-1] ) {
+    if ( ((void**)mem)[-1] ) {
 
-		if ( ((void**)mem)[-2] ) ((void***)mem)[-2][2] = ((void**)mem)[-1];
+        if ( ((void**)mem)[-2] ) ((void***)mem)[-2][2] = ((void**)mem)[-1];
 
-		((void***)mem)[-1][ ((void***)mem)[-1][1] == (void**)mem - 3 ] =
-			((void**)mem)[-2];
-	}
+        ((void***)mem)[-1][ ((void***)mem)[-1][1] == (void**)mem - 3 ] =
+            ((void**)mem)[-2];
+    }
 
-	if ( parent ) {
+    if ( parent ) {
 
-		((void**)mem)[-2] = ((void**)parent)[-3];
-		((void**)mem)[-1] = (void**)parent - 3;
-		((void**)parent)[-3] = (void**)mem - 3;
+        ((void**)mem)[-2] = ((void**)parent)[-3];
+        ((void**)mem)[-1] = (void**)parent - 3;
+        ((void**)parent)[-3] = (void**)mem - 3;
 
-		if ( ((void**)mem)[-2] )
-			((void***)mem)[-2][2] = (void**)mem - 3;
-	} else
-		((void**)mem)[-1] = ((void**)mem)[-2] = NULL;
+        if ( ((void**)mem)[-2] )
+            ((void***)mem)[-2][2] = (void**)mem - 3;
+    } else
+        ((void**)mem)[-1] = ((void**)mem)[-2] = NULL;
 }
 
 
@@ -172,19 +172,19 @@ void talloc_set_parent ( void* mem, void* parent ) {
  */
 void talloc_steal ( void* mem, void* parent ) {
 
-	void **aux;
+    void **aux;
 
-	if ( !mem ) return;
+    if ( !mem ) return;
 
-	for ( aux = ((void***)mem)[-3]; aux; aux = ((void***)mem)[-3] ) {
+    for ( aux = ((void***)mem)[-3]; aux; aux = ((void***)mem)[-3] ) {
 
-		aux[2] = NULL;
+        aux[2] = NULL;
 
-		((void**)mem)[-3] = aux[1];
+        ((void**)mem)[-3] = aux[1];
 
-		talloc_set_parent( aux + 3, parent );
-	}
+        talloc_set_parent( aux + 3, parent );
+    }
 
-	talloc_set_parent( mem, NULL );
+    talloc_set_parent( mem, NULL );
 }
 
