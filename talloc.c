@@ -75,9 +75,6 @@ void* trealloc ( void* mem, size_t size ) {
 
 	if ( (void**)mem - 3 != aux ) {
 
-		aux[0] = header[0];
-		aux[1] = header[1];
-		aux[2] = header[2];
 		if ( aux[0] ) header[0][2] = aux;
 		if ( aux[1] ) header[1][2] = aux;
 		if ( aux[2] ) header[2][ header[2][1] == (void**)mem - 3 ] = aux;
