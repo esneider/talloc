@@ -62,22 +62,18 @@ void* tcalloc ( size_t size, void* parent ) {
  */
 void* trealloc ( void* mem, size_t size ) {
 
-	void **header[3], **aux;
+	void ***aux = mem;
 
 	if ( !mem ) return talloc( size, NULL );
 
-	header[0] = ((void**)mem)[-3];
-	header[1] = ((void**)mem)[-2];
-	header[2] = ((void**)mem)[-1];
-
-	aux = realloc( (void**)mem - 3, size + sizeof( void* ) * 3 );
+	aux = realloc( aux - 3, size + sizeof( void* ) * 3 );
 	if ( !aux ) return NULL;
 
-	if ( (void**)mem - 3 != aux ) {
+	if ( aux + 3 != mem ) {
 
-		if ( aux[0] ) header[0][2] = aux;
-		if ( aux[1] ) header[1][2] = aux;
-		if ( aux[2] ) header[2][ header[2][1] == (void**)mem - 3 ] = aux;
+        if ( aux[0] ) aux[0][2] = aux;
+        if ( aux[1] ) aux[1][2] = aux;
+        if ( aux[2] ) aux[2][ aux[2][1] == (void***)mem - 3 ] = aux;
 	}
 
 	return aux + 3;
