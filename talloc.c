@@ -193,6 +193,21 @@ void talloc_steal ( void* mem, void* parent ) {
 
     if ( !mem ) return;
 
+    talloc_set_parent( mem, NULL );
+
+    if ( parent && ((void**)mem)[-3] ) {
+
+        for( aux = ((void**)mem)[-3]; aux[1]; aux = aux[1] ) ;
+
+        ((void***)parent)[-3][2] = aux;
+        aux[1] = ((void**)parent)[-3];
+
+        ((void**)parent)[-3] = ((void**)mem)[-3];
+        ((void**)mem)[-3] = NULL;
+
+
+    }
+
     for ( aux = ((void***)mem)[-3]; aux; aux = ((void***)mem)[-3] ) {
 
         aux[2] = NULL;
