@@ -147,26 +147,32 @@ void* talloc_get_parent ( void* mem ) {
  */
 void talloc_set_parent ( void* mem, void* parent ) {
 
-    if ( !mem ) return;
+    void*** aux = mem;
+    void*** dad = parent;
 
-    if ( ((void**)mem)[-1] ) {
+    if ( !aux ) return;
 
-        if ( ((void**)mem)[-2] ) ((void***)mem)[-2][2] = ((void**)mem)[-1];
+    aux -= 3;
+    dad -= 3;
 
-        ((void***)mem)[-1][ ((void***)mem)[-1][1] == (void**)mem - 3 ] =
-            ((void**)mem)[-2];
+    if ( aux[2] ) {
+
+        if ( aux[1] ) aux[1][2] = aux[2];
+
+        aux[2][ aux[2][1] == aux ] = aux[1];
     }
 
     if ( parent ) {
 
-        ((void**)mem)[-2] = ((void**)parent)[-3];
-        ((void**)mem)[-1] = (void**)parent - 3;
-        ((void**)parent)[-3] = (void**)mem - 3;
+        aux[1] = dad[0];
+        aux[2] = (void**)dad;
+        dad[0] = (void**)aux;
 
-        if ( ((void**)mem)[-2] )
-            ((void***)mem)[-2][2] = (void**)mem - 3;
+        if ( aux[1] ) aux[1][2] = aux;
+
     } else {
-        ((void**)mem)[-1] = ((void**)mem)[-2] = NULL;
+
+        aux[1] = aux[2] = NULL;
     }
 }
 
