@@ -21,7 +21,8 @@
  */
 void* talloc ( size_t size, void* parent ) {
 
-    void **mem = malloc( size + sizeof( void* ) * 3 );
+    void** mem = malloc( size + sizeof( void* ) * 3 );
+
     if ( !mem ) return NULL;
 
     mem[0] = mem[1] = mem[2] = NULL;
@@ -43,7 +44,8 @@ void* talloc ( size_t size, void* parent ) {
  */
 void* tcalloc ( size_t size, void* parent ) {
 
-    void **mem = calloc( 1, size + sizeof( void* ) * 3 );
+    void** mem = calloc( 1, size + sizeof( void* ) * 3 );
+
     if ( !mem ) return NULL;
 
     talloc_set_parent( mem + 3, parent );
@@ -62,18 +64,19 @@ void* tcalloc ( size_t size, void* parent ) {
  */
 void* trealloc ( void* mem, size_t size ) {
 
-    void ***aux = mem;
+    void*** aux = mem;
 
     if ( !mem ) return talloc( size, NULL );
 
     aux = realloc( aux - 3, size + sizeof( void* ) * 3 );
+
     if ( !aux ) return NULL;
 
     if ( aux + 3 != mem ) {
 
         if ( aux[0] ) aux[0][2] = aux;
         if ( aux[1] ) aux[1][2] = aux;
-        if ( aux[2] ) aux[2][ aux[2][1] == (void***)mem - 3 ] = aux;
+        if ( aux[2] ) aux[2][ aux[2][1] == (void**)mem - 3 ] = aux;
     }
 
     return aux + 3;
@@ -186,7 +189,7 @@ void talloc_set_parent ( void* mem, void* parent ) {
  */
 void talloc_steal ( void* mem, void* parent ) {
 
-    void **aux;
+    void** aux;
 
     if ( !mem ) return;
 
