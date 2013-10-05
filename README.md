@@ -6,7 +6,7 @@
     cmake ..
     make
 
-(2) Build the tests if necessary:
+(2) Test the library if necessary
 
     (Build the library first as described in point 1)
     make test
@@ -16,7 +16,7 @@
     (Build the library first as described in point 1)
     make install
 
-(4) Test the library if necessary
+(4) Debugging with valgrind
 
     (Build the tests first as described in point 2)
     cd tests
