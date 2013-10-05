@@ -1,0 +1,5 @@
+Authors:
+    Dario Sneidermanis <?>
+
+Maintainers:
+    Alex Belanger <i.caught.air@gmail.com>

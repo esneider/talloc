@@ -1,32 +1,3 @@
-/**
- * @file talloc.c
- *
- * @brief Provides structure aware allocations
- *
- * @author Dario Sneidermanis
- *
- *
- * Each chunk of talloc'ed memory has a header of the following form:
- *
- * +-------+---------+---------+--------...
- * | first |  next   |  prev   | memory
- * |  son  | sibling | sibling |
- * +-------+---------+---------+--------...
- *
- * Thus, a talloc hierarchy tree would look like this:
- *
- *   NULL <-- node --> NULL
- *            ^
- *            |
- *            +> node <--> node <--> node --> NULL
- *               v         v         ^
- *               NULL      NULL      |
- *                                   +> node <--> node --> NULL
- *                                      v         v
- *                                      NULL      NULL
- */
-
-#include <stdlib.h>
 #include "talloc.h"
 
 
