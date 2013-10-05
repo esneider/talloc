@@ -3,5 +3,7 @@ PROJECT(talloc)
 
 ADD_LIBRARY(
     talloc
-    talloc.c
+    src/talloc.c
 )
+
+ADD_SUBDIRECTORY(tests)
