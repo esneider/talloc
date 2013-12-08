@@ -110,7 +110,9 @@ void* trealloc ( void* mem, size_t size ) {
  */
 static void __tfree ( void** mem ) {
 
-    if ( !mem ) return;
+    if ( !mem || !mem[2] ) return;
+
+    mem[2] = NULL;
 
     __tfree( mem[0] );
     __tfree( mem[1] );
