@@ -80,7 +80,7 @@ void talloc_set_parent ( void* mem, void* parent );
  *
  * @param mem     pointer to previously talloc'ed memory
  * @param parent  pointer to previously talloc'ed memory from wich this chunk's
- *                sons will depend or NULL
+ *                children will depend or NULL
  */
 void talloc_steal ( void* mem, void* parent );
 

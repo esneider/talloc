@@ -10,7 +10,7 @@
  *
  * +-------+---------+---------+--------...
  * | first |  next   |  prev   | memory
- * |  son  | sibling | sibling |
+ * | child | sibling | sibling | chunk
  * +-------+---------+---------+--------...
  *
  * Thus, a talloc hierarchy tree would look like this:
@@ -116,7 +116,7 @@ static void __tfree ( void** mem ) {
 
     __tfree( mem[0] );
     __tfree( mem[1] );
-    free( mem );
+       free( mem );
 }
 
 
@@ -134,13 +134,8 @@ void tfree ( void* mem ) {
     talloc_set_parent( mem, NULL );
 
     aux -= 3;
-
     __tfree( aux[0] );
-
-    if ( aux[1] ) aux[1][2] = aux[2];
-    if ( aux[2] ) aux[2][ aux[2][1] == aux ] = aux[1];
-
-    free( aux );
+       free( aux );
 }
 
 
@@ -155,7 +150,7 @@ void* talloc_get_parent ( void* mem ) {
 
     void*** aux = mem;
 
-    if ( !aux || !aux[-1] ) return NULL;
+    if ( !mem || !aux[-1] ) return NULL;
 
     for ( aux -= 3; aux[2][1] == aux; aux = (void***)(aux[2]) ) ;
 
@@ -175,30 +170,30 @@ void talloc_set_parent ( void* mem, void* parent ) {
     void*** aux = mem;
     void*** dad = parent;
 
-    if ( !aux ) return;
+    if ( !mem ) return;
 
     aux -= 3;
     dad -= 3;
 
-    if ( aux[2] ) {
+    if ( aux[2] ) { /* if !root, remove from tree */
 
         if ( aux[1] ) aux[1][2] = aux[2];
 
         aux[2][ aux[2][1] == aux ] = aux[1];
     }
 
-    if ( parent ) {
+    if ( parent ) { /* if parent, add to new tree */
+
+        if ( dad[0] ) dad[0][2] = aux;
 
         aux[1] = dad[0];
         aux[2] = (void**)dad;
         dad[0] = (void**)aux;
 
-        if ( aux[1] ) aux[1][2] = aux;
-
-    } else {
-
-        aux[1] = aux[2] = NULL;
+        return;
     }
+
+    aux[1] = aux[2] = NULL;
 }
 
 
@@ -207,7 +202,7 @@ void talloc_set_parent ( void* mem, void* parent ) {
  *
  * @param mem     pointer to previously talloc'ed memory
  * @param parent  pointer to previously talloc'ed memory from wich this chunk's
- *                sons will depend or NULL
+ *                children will depend or NULL
  */
 void talloc_steal ( void* mem, void* parent ) {
 
