@@ -1,7 +1,6 @@
 /**
- * @file talloc.h
- *
- * @brief Provides structure aware allocations
+ * Talloc is a replacement for the standard memory allocation routines that
+ * provides structure aware allocations.
  *
  * @author Dario Sneidermanis
  */
@@ -11,79 +10,75 @@
 
 #include <stddef.h>
 
+/**
+ * Allocate a (contiguous) memory chunk.
+ *
+ * @param size    amount of memory requested (in bytes).
+ * @param parent  pointer to previously talloc'ed memory chunk from which this
+ *                chunk depends, or NULL.
+ *
+ * @return pointer to the allocated memory chunk, or NULL if there was an error.
+ */
+void *talloc(size_t size, void *parent);
 
 /**
- * Allocate memory
+ * Allocate a zeroed (contiguous) memory chunk.
  *
- * @param size    amount of memory requested
- * @param parent  pointer to previously talloc'ed memory from wich this chunk
- *                depends or NULL
+ * @param size    amount of memory requested (in bytes).
+ * @param parent  pointer to previously talloc'ed memory chunk from which this
+ *                chunk depends, or NULL.
  *
- * @return a pointer to the allocated memory
+ * @return pointer to the allocated memory chunk, or NULL if there was an error.
  */
-void* talloc ( size_t size, void* parent );
-
+void *tzalloc(size_t size, void *parent);
 
 /**
- * Allocate zeroed memory
+ * Modify the size of a talloc'ed memory chunk.
  *
- * @param size    amount of memory requested
- * @param parent  pointer to previously talloc'ed memory from wich this chunk
- *                depends or NULL
+ * @param mem   pointer to previously talloc'ed memory chunk.
+ * @param size  amount of memory requested (in bytes).
  *
- * @return a pointer to the allocated memory
+ * @return pointer to the allocated memory chunk, or NULL if there was an error.
  */
-void* tcalloc ( size_t size, void* parent );
-
+void *trealloc(void *mem, size_t size);
 
 /**
- * Re-allocate memory
+ * Deallocate a talloc'ed memory chunk and all the chunks depending on it.
  *
- * @param mem   pointer to previously talloc'ed memory
- * @param size  amount of memory requested
+ * @param mem  pointer to previously talloc'ed memory chunk.
  *
- * @return a pointer to the allocated memory if successful, NULL otherwise
+ * @return always NULL, can be safely ignored.
  */
-void* trealloc ( void* mem, size_t size );
-
+void *tfree(void *mem);
 
 /**
- * Free memory
+ * Get the parent of a talloc'ed memory chunk (the chunk on which it depends).
  *
- * @param mem  pointer to previously talloc'ed memory
+ * @param mem  pointer to previously talloc'ed memory chunk.
+ *
+ * @return pointer to the parent memory chunk (could be NULL).
  */
-void tfree ( void* mem );
-
+void *talloc_get_parent(void *mem);
 
 /**
- * Get parent of talloc'ed memory
+ * Change the parent of a talloc'ed memory chunk. This will affect the
+ * dependencies of the entire subtree rooted at the given chunk.
  *
- * @param mem  pointer to previously talloc'ed memory
- *
- * @return pointer to previously talloc'ed memory from which this chunk depends
+ * @param mem     pointer to previously talloc'ed memory chunk.
+ * @param parent  pointer to previously talloc'ed memory chunk from which this
+ *                chunk depends, or NULL.
  */
-void* talloc_get_parent ( void* mem );
-
+void talloc_set_parent(void *mem, void *parent);
 
 /**
- * Set parent of talloc'ed memory
+ * Remove a talloc'ed memory chunk from the dependency tree, taking care of its
+ * children (they will depend on parent).
  *
- * @param mem     pointer to previously talloc'ed memory
- * @param parent  pointer to previously talloc'ed memory from wich this chunk
- *                depends or NULL
+ * @param mem     pointer to previously talloc'ed memory chunk.
+ * @param parent  pointer to previously talloc'ed memory chunk from which this
+ *                chunk's children will depend, or NULL.
  */
-void talloc_set_parent ( void* mem, void* parent );
-
-
-/**
- * Remove chunk of talloc'ed memory from dependency chain.
- *
- * @param mem     pointer to previously talloc'ed memory
- * @param parent  pointer to previously talloc'ed memory from wich this chunk's
- *                children will depend or NULL
- */
-void talloc_steal ( void* mem, void* parent );
-
+void talloc_steal(void *mem, void *parent);
 
 #endif /* _TALLOC_H_ */
 

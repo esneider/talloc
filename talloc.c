@@ -1,239 +1,276 @@
 /**
- * @file talloc.c
- *
- * @brief Provides structure aware allocations
+ * Talloc is a replacement for the standard memory allocation routines that
+ * provides structure aware allocations.
  *
  * @author Dario Sneidermanis
  *
- *
  * Each chunk of talloc'ed memory has a header of the following form:
  *
- * +-------+---------+---------+--------...
- * | first |  next   |  prev   | memory
- * | child | sibling | sibling | chunk
- * +-------+---------+---------+--------...
+ * +---------+---------+---------+--------···
+ * |  first  |  next   |  prev   | memory
+ * |  child  | sibling | sibling | chunk
+ * +---------+---------+---------+--------···
  *
  * Thus, a talloc hierarchy tree would look like this:
  *
- *   NULL <-- node --> NULL
- *            ^
- *            |
- *            +> node <--> node <--> node --> NULL
- *               v         v         ^
- *               NULL      NULL      |
- *                                   +> node <--> node --> NULL
- *                                      v         v
- *                                      NULL      NULL
+ *   NULL <-- chunk --> NULL
+ *              ^
+ *              |
+ *              +-> chunk <--> chunk <--> chunk --> NULL
+ *                    |          |          ^
+ *                    v          v          |
+ *                   NULL       NULL        +-> chunk <--> chunk --> NULL
+ *                                                |          |
+ *                                                v          v
+ *                                               NULL       NULL
  */
 
 #include <stdlib.h>
+#include <string.h>
+#include <assert.h>
 #include "talloc.h"
 
+/**
+ * Talloc tree node helpers.
+ */
+
+#define HEADER_SIZE (sizeof(void*) * 3)
+
+#define  raw2usr(mem) (void*)((void**)(mem) + 3)
+#define  usr2raw(mem) (void*)((void**)(mem) - 3)
+#define    child(mem) (((void**)(mem))[-3])
+#define     next(mem) (((void**)(mem))[-2])
+#define     prev(mem) (((void**)(mem))[-1])
+#define   parent(mem) prev(mem) /* Valid only when is_first(mem). */
+#define  is_root(mem) (!prev(mem))
+#define is_first(mem) (next(prev(mem)) != (mem))
 
 /**
- * Allocate memory
+ * Initialize a raw chunk of memory.
  *
- * @param size    amount of memory requested
- * @param parent  pointer to previously talloc'ed memory from wich this chunk
- *                depends or NULL
+ * @param mem     pointer to a raw memory chunk.
+ * @param parent  pointer to previously talloc'ed memory chunk from which this
+ *                chunk depends, or NULL.
  *
- * @return a pointer to the allocated memory
+ * @return pointer to the allocated memory chunk, or NULL if there was an error.
  */
-void* talloc ( size_t size, void* parent ) {
+static void *talloc_init(void *mem, void *parent) {
 
-    void** mem = malloc( size + sizeof( void* ) * 3 );
+    if (!mem)
+        return NULL;
 
-    if ( !mem ) return NULL;
+    memset(mem, 0, HEADER_SIZE);
+    mem = raw2usr(mem);
 
-    mem[0] = mem[1] = mem[2] = NULL;
-
-    talloc_set_parent( mem + 3, parent );
-
-    return mem + 3;
+    talloc_set_parent(mem, parent);
+    return mem;
 }
 
-
 /**
- * Allocate zeroed memory
+ * Allocate a (contiguous) memory chunk.
  *
- * @param size    amount of memory requested
- * @param parent  pointer to previously talloc'ed memory from wich this chunk
- *                depends or NULL
+ * @param size    amount of memory requested (in bytes).
+ * @param parent  pointer to previously talloc'ed memory chunk from which this
+ *                chunk depends, or NULL.
  *
- * @return a pointer to the allocated memory
+ * @return pointer to the allocated memory chunk, or NULL if there was an error.
  */
-void* tcalloc ( size_t size, void* parent ) {
+void *talloc(size_t size, void *parent) {
 
-    void** mem = calloc( 1, size + sizeof( void* ) * 3 );
-
-    if ( !mem ) return NULL;
-
-    talloc_set_parent( mem + 3, parent );
-
-    return mem + 3;
+    return talloc_init(malloc(size + HEADER_SIZE), parent);
 }
 
+/**
+ * Allocate a zeroed (contiguous) memory chunk.
+ *
+ * @param size    amount of memory requested (in bytes).
+ * @param parent  pointer to previously talloc'ed memory chunk from which this
+ *                chunk depends, or NULL.
+ *
+ * @return pointer to the allocated memory chunk, or NULL if there was an error.
+ */
+void *tzalloc(size_t size, void *parent) {
+
+    return talloc_init(calloc(1, size + HEADER_SIZE), parent);
+}
 
 /**
- * Re-allocate memory
+ * Modify the size of a talloc'ed memory chunk.
  *
- * @param mem   pointer to previously talloc'ed memory
- * @param size  amount of memory requested
+ * @param usr   pointer to previously talloc'ed memory chunk.
+ * @param size  amount of memory requested (in bytes).
  *
- * @return a pointer to the allocated memory if successful, NULL otherwise
+ * @return pointer to the allocated memory chunk, or NULL if there was an error.
  */
-void* trealloc ( void* mem, size_t size ) {
+void *trealloc(void *usr, size_t size) {
 
-    void*** aux = mem;
+    void *mem = realloc(usr2raw(usr), size + HEADER_SIZE);
 
-    if ( !mem ) return talloc( size, NULL );
+    if (!usr | !mem)
+        return talloc_init(mem, NULL);
 
-    aux = realloc( aux - 3, size + sizeof( void* ) * 3 );
+    mem = raw2usr(mem);
 
-    if ( !aux ) return NULL;
+    /* If the buffer starting address changed, update all references. */
 
-    if ( aux + 3 != mem ) {
+    if (mem != usr) {
 
-        if ( aux[0] ) aux[0][2] = aux;
-        if ( aux[1] ) aux[1][2] = aux;
-        if ( aux[2] ) aux[2][ aux[2][1] == (void**)mem - 3 ] = aux;
+        if (child(mem))
+            parent(child(mem)) = mem;
+
+        if (!is_root(mem)) {
+
+            if (next(mem))
+                prev(next(mem)) = mem;
+
+            if (next(prev(mem)) == usr)
+                next(prev(mem)) = mem;
+
+            if (child(parent(mem)) == usr)
+                child(parent(mem)) = mem;
+        }
     }
 
-    return aux + 3;
+    return mem;
 }
 
-
 /**
- * This is for internal use
+ * Deallocate all the descendants of parent(mem) recursively.
  *
- * @see tfree
+ * @param mem  pointer to previously talloc'ed memory chunk.
  */
-static void __tfree ( void** mem ) {
+static void __tfree(void *mem) {
 
-    if ( !mem || !mem[2] ) return;
-
-    mem[2] = NULL;
-
-    __tfree( mem[0] );
-    __tfree( mem[1] );
-       free( mem );
-}
-
-
-/**
- * Free memory
- *
- * @param mem  pointer to previously talloc'ed memory
- */
-void tfree ( void* mem ) {
-
-    void*** aux = mem;
-
-    if ( !mem ) return;
-
-    talloc_set_parent( mem, NULL );
-
-    aux -= 3;
-    __tfree( aux[0] );
-       free( aux );
-}
-
-
-/**
- * Get parent of talloc'ed memory
- *
- * @param mem  pointer to previously talloc'ed memory
- *
- * @return pointer to previously talloc'ed memory from which this chunk depends
- */
-void* talloc_get_parent ( void* mem ) {
-
-    void*** aux = mem;
-
-    if ( !mem || !aux[-1] ) return NULL;
-
-    for ( aux -= 3; aux[2][1] == aux; aux = (void***)(aux[2]) ) ;
-
-    return aux[2] + 3;
-}
-
-
-/**
- * Set parent of talloc'ed memory
- *
- * @param mem     pointer to previously talloc'ed memory
- * @param parent  pointer to previously talloc'ed memory from wich this chunk
- *                depends or NULL
- */
-void talloc_set_parent ( void* mem, void* parent ) {
-
-    void*** aux = mem;
-    void*** dad = parent;
-
-    if ( !mem ) return;
-
-    aux -= 3;
-    dad -= 3;
-
-    if ( aux[2] ) { /* if !root, remove from tree */
-
-        if ( aux[1] ) aux[1][2] = aux[2];
-
-        aux[2][ aux[2][1] == aux ] = aux[1];
-    }
-
-    if ( parent ) { /* if parent, add to new tree */
-
-        if ( dad[0] ) dad[0][2] = aux;
-
-        aux[1] = dad[0];
-        aux[2] = (void**)dad;
-        dad[0] = (void**)aux;
-
+    if (!mem)
         return;
-    }
 
-    aux[1] = aux[2] = NULL;
+    /* Fail if the tree hierarchy has cycles. */
+    assert(prev(mem));
+    prev(mem) = NULL;
+
+    __tfree(child(mem));
+    __tfree(next(mem));
+    free(usr2raw(mem));
 }
 
+/**
+ * Deallocate a talloc'ed memory chunk and all the chunks depending on it.
+ *
+ * @param mem  pointer to previously talloc'ed memory chunk.
+ *
+ * @return always NULL, can be safely ignored.
+ */
+void *tfree(void *mem) {
+
+    if (!mem)
+        return NULL;
+
+    talloc_set_parent(mem, NULL);
+
+    __tfree(child(mem));
+    free(usr2raw(mem));
+
+    return NULL;
+}
 
 /**
- * Remove chunk of talloc'ed memory from dependency chain.
+ * Get the parent of a talloc'ed memory chunk (the chunk on which it depends).
  *
- * @param mem     pointer to previously talloc'ed memory
- * @param parent  pointer to previously talloc'ed memory from wich this chunk's
- *                children will depend or NULL
+ * @param mem  pointer to previously talloc'ed memory chunk.
+ *
+ * @return pointer to the parent memory chunk (could be NULL).
  */
-void talloc_steal ( void* mem, void* parent ) {
+void *talloc_get_parent(void *mem) {
 
-    void*** aux = mem;
-    void*** dad = parent;
-    void**  son;
+    if (!mem || is_root(mem))
+        return NULL;
 
-    if ( !mem ) return;
+    while (!is_first(mem))
+        mem = prev(mem);
 
-    talloc_set_parent( mem, NULL );
+    return parent(mem);
+}
 
-    aux -= 3;
+/**
+ * Change the parent of a talloc'ed memory chunk. This will affect the
+ * dependencies of the entire subtree rooted at the given chunk.
+ *
+ * @param mem     pointer to previously talloc'ed memory chunk.
+ * @param parent  pointer to previously talloc'ed memory chunk from which this
+ *                chunk depends, or NULL.
+ */
+void talloc_set_parent(void *mem, void *parent) {
 
-    if ( !aux[0] ) return;
+    if (!mem)
+        return;
 
-    if ( parent ) {
+    if (!is_root(mem)) {
 
-        dad -= 3;
+        /* Remove node from old tree. */
 
-        if ( dad[0] ) {
+        if (next(mem))
+            prev(next(mem)) = prev(mem);
 
-            for ( son = aux[0]; son[1]; son = son[1] ) ;
+        if (!is_first(mem))
+            next(prev(mem)) = next(mem);
 
-            dad[0][2] = son;
-            son[1] = dad[0];
+        if (is_first(mem))
+            child(parent(mem)) = next(mem);
+    }
+
+    next(mem) = prev(mem) = NULL;
+
+    if (parent) {
+
+        /* Insert node into new tree. */
+
+        if (child(parent)) {
+            next(mem) = child(parent);
+            prev(child(parent)) = mem;
         }
 
-        dad[0] = aux[0];
+        parent(mem) = parent;
+        child(parent) = mem;
+    }
+}
+
+/**
+ * Remove a talloc'ed memory chunk from the dependency tree, taking care of its
+ * children (they will depend on parent).
+ *
+ * @param mem     pointer to previously talloc'ed memory chunk.
+ * @param parent  pointer to previously talloc'ed memory chunk from which this
+ *                chunk's children will depend, or NULL.
+ */
+void talloc_steal(void *mem, void *parent) {
+
+    if (!mem)
+        return;
+
+    talloc_set_parent(mem, NULL);
+
+    if (!child(mem))
+        return;
+
+    if (parent) {
+
+        /* Insert mem children in front of the list of parent children. */
+
+        if (child(parent)) {
+
+            void *last = child(mem);
+
+            while (next(last))
+                last = next(last);
+
+            prev(child(parent)) = last;
+            next(last) = child(parent);
+        }
+
+        child(parent) = child(mem);
     }
 
-    aux[0][2] = dad;
-    aux[0] = NULL;
+    parent(child(mem)) = parent;
+    child(mem) = NULL;
 }
 

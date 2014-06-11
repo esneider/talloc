@@ -9,31 +9,31 @@ exit
 #include "talloc.h"
 
 
-int main( void ){
+int main(void) {
 
-    char* a = talloc( 3243, NULL );
-    char* b = talloc( 3243, a );
-    char* c = talloc( 3243, a );
-    char* d = talloc( 3243, b );
-    char* e = talloc( 3243, d );
-    char* f = talloc( 3243, d );
+    char *a = talloc(3243, NULL);
+    char *b = talloc(3243, a);
+    char *c = talloc(3243, a);
+    char *d = talloc(3243, b);
+    char *e = talloc(3243, d);
+    char *f = talloc(3243, d);
 
-    char* g = talloc( 3243, NULL );
-    char* h = talloc( 3243, g );
-    char* i = talloc( 3243, h );
-    char* j = talloc( 3243, h );
-    char* k = talloc( 3243, j );
+    char *g = talloc(3243, NULL);
+    char *h = talloc(3243, g);
+    char *i = talloc(3243, h);
+    char *j = talloc(3243, h);
+    char *k = talloc(3243, j);
 
-    c = trealloc( c, 12345 );
-    d = trealloc( d, 12345 );
-    e = trealloc( e, 12345 );
+    c = trealloc(c, 12345);
+    d = trealloc(d, 12345);
+    e = trealloc(e, 12345);
 
-    g = trealloc( g, 12345 );
-    j = trealloc( j, 12345 );
-    j = trealloc( j, 12345 );
-    i = trealloc( i, 12345 );
+    g = trealloc(g, 12345);
+    j = trealloc(j, 12345);
+    j = trealloc(j, 12345);
+    i = trealloc(i, 12345);
 
-    talloc_steal( h, g ); /* same as talloc_steal( h, talloc_get_parent(h) ); */
+    talloc_steal(h, g); /* same as talloc_steal( h, talloc_get_parent(h) ); */
 
     tfree(a);
     tfree(j);
