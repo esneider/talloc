@@ -1,4 +1,5 @@
 # talloc
+[![Build Status](https://travis-ci.org/esneider/talloc.svg?branch=master)](https://travis-ci.org/esneider/talloc)
 
 Talloc is a hierarchical memory allocator. That means that it is similar to
 *malloc*, but it can also track the natural tree-like structure of memory
@@ -8,7 +9,7 @@ dependencies.
 ## Example
 
 As an example we develop the allocation operations for a bi-dimensional matrix
-of integers.
+of integers. For simplicity, the example does not handle out-of-memory errors.
 
 ```c
 struct matrix {
@@ -19,34 +20,21 @@ struct matrix {
 
 struct matrix *new_matrix(size_t rows, size_t cols) {
 
-    struct matrix *m;
-    int i;
-
-    m = talloc(sizeof(*m), NULL);
-
-    if (!m)
-        return NULL;
+    struct matrix *m = talloc(sizeof(*m), NULL);
 
     m->rows = rows;
     m->cols = cols;
     m->data = talloc(rows * sizeof(*m->data), m);
 
-    if (!m->data)
-        return tfree(m);
-
-    for (i = 0; i < rows; i++) {
+    for (size_t i = 0; i < rows; i++)
         m->data[i] = talloc(cols * sizeof(**m->data), m->data);
-
-        if (!m->data[i])
-            return tfree(m);
-    }
 
     return m;
 }
 
-void *free_matrix(struct matrix *m) {
+void free_matrix(struct matrix *m) {
 
-    return tfree(m);
+    tfree(m);
 }
 ```
 
