@@ -1,5 +1,11 @@
 language: c
 
+env:
+    global:
+        # The next declaration is the encrypted COVERITY_SCAN_TOKEN, created
+        #   via the "travis encrypt" command using the project repo's public key
+        secure: HMuYz1i50Io7nxgUus91SNnhVk2KJplsmxQSV2T41u1GN2Ub4iDtbgpm0NCHT6Wo2yOycqX6pkfQttlGthyZuTPzDcMRCIZHwVDtNlUIBYtNlUo87mKlgOvQSoV0rUozPKxeCpG9cv/p9W2Jldu9APuaWYlCRybIukf9xv5rJM0=
+
 compiler:
     - gcc
     - clang
@@ -12,3 +18,14 @@ script:
 
 after_success:
     - coveralls
+
+addons:
+    coverity_scan:
+        project:
+            name: "esneider/talloc"
+            description: "Hierarchical memory allocator"
+        notification_email: dariosn@gmail.com
+        build_command_prepend:
+        build_command: "make"
+        branch_pattern: coverity_scan
+
