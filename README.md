@@ -1,5 +1,6 @@
 # talloc
 [![Build Status](https://travis-ci.org/esneider/talloc.svg?branch=master)](https://travis-ci.org/esneider/talloc)
+[![Coverage Status](https://coveralls.io/repos/esneider/talloc/badge.png)](https://coveralls.io/r/esneider/talloc)
 
 Talloc is a hierarchical memory allocator. That means that it is similar to
 *malloc*, but it can also track the natural tree-like structure of memory
