@@ -104,7 +104,7 @@ void *tzalloc(size_t size, void *parent) {
  */
 void *trealloc(void *usr, size_t size) {
 
-    void *mem = realloc(usr2raw(usr), size + HEADER_SIZE);
+    void *mem = realloc(usr ? usr2raw(usr) : NULL, size + HEADER_SIZE);
 
     if (!usr | !mem)
         return talloc_init(mem, NULL);

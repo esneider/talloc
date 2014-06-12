@@ -22,11 +22,11 @@ struct matrix {
 
 struct matrix *new_matrix(size_t rows, size_t cols) {
 
-    struct matrix *m = talloc(sizeof(*m), NULL);
+    struct matrix *m = tzalloc(sizeof(*m), NULL);
 
     m->rows = rows;
     m->cols = cols;
-    m->data = talloc(rows * sizeof(*m->data), m);
+    m->data = tzalloc(rows * sizeof(*m->data), m);
 
     for (size_t i = 0; i < rows; i++)
         m->data[i] = talloc(cols * sizeof(**m->data), m->data);
