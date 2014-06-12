@@ -106,7 +106,7 @@ void *trealloc(void *usr, size_t size) {
 
     void *mem = realloc(usr ? usr2raw(usr) : NULL, size + HEADER_SIZE);
 
-    if (!usr | !mem)
+    if (!usr || !mem)
         return talloc_init(mem, NULL);
 
     mem = raw2usr(mem);
