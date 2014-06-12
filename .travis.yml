@@ -25,7 +25,7 @@ addons:
             name: "esneider/talloc"
             description: "Hierarchical memory allocator"
         notification_email: dariosn@gmail.com
-        build_command_prepend: "true"
-        build_command: "make"
-        branch_pattern: coverity_scan
+        build_command_prepend: true
+        build_command: make
+        branch_pattern: master
 
