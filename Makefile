@@ -1,16 +1,17 @@
-CFLAGS   = -ansi -pedantic -Wall -Wextra -Werror -g --coverage
 SRC_DIR  = src
 OBJ_DIR  = obj
 TEST_DIR = test
 
-.PHONY: talloc test clean
+.PHONY: all test setup clean
 
-talloc:
-	@mkdir -p $(OBJ_DIR)
-	$(CC) $(CFLAGS) -I$(SRC_DIR) -c -o $(OBJ_DIR)/$@.o $(SRC_DIR)/$@.c
+all:
+	@cd $(SRC_DIR) && make
 
 test:
 	@cd $(TEST_DIR) && make
+
+setup:
+	@mkdir -p $(OBJ_DIR)
 
 clean:
 	@rm -rf $(OBJ_DIR)

@@ -3,17 +3,23 @@ BASE    = ..
 SRC_DIR = $(BASE)/src
 OBJ_DIR = $(BASE)/obj
 SOURCES = $(wildcard *.c)
+TARGETS = $(addprefix $(OBJ_DIR)/,$(SOURCES:.c=))
+TESTS   = $(addsuffix .test,$(TARGETS))
 
-all:
-	@cd $(BASE) && make clean && make
-	@make $(SOURCES:.c=.build)
-	@make $(SOURCES:.c=.run)
-	@cd $(BASE) && make clean
+.PHONY: all setup clean
 
-%.build:
-	$(CC) $(CFLAGS) -I$(SRC_DIR) -o $(OBJ_DIR)/$* $(OBJ_DIR)/*.o $*.c
+all: setup $(TARGETS) $(TESTS) clean
 
-%.run:
+$(OBJ_DIR)/%: %.c $(OBJ_DIR)/*.o
+	$(CC) $(CFLAGS) -I$(SRC_DIR) -o $@ $^
+
+$(OBJ_DIR)/%.test:
 	@echo "> In file $*.c"
-	@$(OBJ_DIR)/$*
+	@$(@:.test=)
+
+setup:
+	@cd $(BASE) && make clean && make
+
+clean:
+	@cd $(BASE) && make clean
 
