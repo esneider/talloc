@@ -5,8 +5,8 @@
  * @author Dario Sneidermanis
  */
 
-#ifndef _TALLOC_H_
-#define _TALLOC_H_
+#ifndef __TALLOC_H__
+#define __TALLOC_H__
 
 #include <stddef.h>
 
@@ -80,5 +80,5 @@ void talloc_set_parent(void *mem, void *parent);
  */
 void talloc_steal(void *mem, void *parent);
 
-#endif /* _TALLOC_H_ */
+#endif /* __TALLOC_H__ */
 

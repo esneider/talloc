@@ -1,14 +1,18 @@
-CFLAGS = -ansi -pedantic -Wall -Wextra -g --coverage
+CC       = gcc
+CFLAGS   = -ansi -pedantic -Wall -Wextra -Werror -g --coverage
+SRC_DIR  = src
+OBJ_DIR  = obj
+TEST_DIR = test
 
-.PHONY: all src test clean
+.PHONY: talloc test clean
 
-all: src test
-
-src: talloc.c talloc_test.c talloc.h
-	$(CC) $(CFLAGS) -o test talloc.c talloc_test.c
+talloc:
+	@mkdir -p $(OBJ_DIR)
+	$(CC) $(CFLAGS) -I$(SRC_DIR) -c -o $(OBJ_DIR)/$@.o $(SRC_DIR)/$@.c
 
 test:
-	./test
+	@cd $(TEST_DIR) && make
 
 clean:
-	rm -f test *.o
+	@rm -rf $(OBJ_DIR)
+

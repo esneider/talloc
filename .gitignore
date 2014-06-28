@@ -1,0 +1,10 @@
+# Mac files
+.DS_Store
+
+# Object files
+*.o
+obj/
+
+# Coverage files
+*.gcda
+*.gcno

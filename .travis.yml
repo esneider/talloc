@@ -14,7 +14,7 @@ before_install:
     - sudo pip install cpp-coveralls
 
 script:
-    - make
+    - make test
 
 after_success:
     - coveralls
@@ -26,6 +26,6 @@ addons:
             description: "Hierarchical memory allocator"
         notification_email: dariosn@gmail.com
         build_command_prepend: true
-        build_command: make
+        build_command: make test
         branch_pattern: master
 

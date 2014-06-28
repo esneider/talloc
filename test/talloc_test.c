@@ -1,13 +1,4 @@
-#if 0
-#!/bin/bash
-gcc -ansi -pedantic -Wall -Wextra talloc.c -g talloc_test.c -o talloc_test
-valgrind ./talloc_test
-rm talloc_test
-exit
-#endif
-
 #include "talloc.h"
-
 
 int main(void) {
 
