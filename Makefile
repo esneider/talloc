@@ -1,4 +1,3 @@
-CC       = gcc
 CFLAGS   = -ansi -pedantic -Wall -Wextra -Werror -g --coverage
 SRC_DIR  = src
 OBJ_DIR  = obj

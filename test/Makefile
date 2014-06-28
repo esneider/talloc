@@ -1,4 +1,3 @@
-CC      = gcc
 CFLAGS  = -Wall -Wextra -Werror -g --coverage
 BASE    = ..
 SRC_DIR = $(BASE)/src
