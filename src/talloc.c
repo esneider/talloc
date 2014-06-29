@@ -145,6 +145,7 @@ static void __tfree(void *mem) {
         return;
 
     /* Fail if the tree hierarchy has cycles. */
+
     assert(prev(mem));
     prev(mem) = NULL;
 
