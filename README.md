@@ -44,7 +44,7 @@ void free_matrix(struct matrix *m) {
 
 The API is really simple and each function does what you expect. For a detailed
 explanation of each function, [see the inline
-documentation](https://github.com/esneider/talloc/blob/master/talloc.h).
+documentation](https://github.com/esneider/talloc/blob/master/src/talloc.h).
 
 The only detail is that you cannot mix the *malloc* and *talloc* families of
 functions for a given chunk of memory. Once a chunk is allocated with *talloc*
@@ -87,7 +87,7 @@ void talloc_steal(void *mem, void *parent);
 
 For each *talloc'ed* chunk of memory, 3 extra pointers are used to maintain the
 internal structure. The time overhead for using *talloc* is quite small, since
-([as you can see](https://github.com/esneider/talloc/blob/master/talloc.c)) the
+([as you can see](https://github.com/esneider/talloc/blob/master/src/talloc.c)) the
 code is extremely simple.
 
 ## Credits
