@@ -2,13 +2,13 @@ SRC_DIR  = src
 OBJ_DIR  = obj
 TEST_DIR = test
 
-.PHONY: all test setup clean
+.PHONY: build test setup clean
 
-all:
-	@cd $(SRC_DIR) && make
+build:
+	@make -C $(SRC_DIR)
 
 test:
-	@cd $(TEST_DIR) && make
+	@make -C $(TEST_DIR)
 
 setup:
 	@mkdir -p $(OBJ_DIR)

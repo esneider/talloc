@@ -5,15 +5,19 @@ SOURCES = $(wildcard *.c)
 INCLUDE = $(wildcard *.h)
 OBJECTS = $(addprefix $(OBJ_DIR)/,$(SOURCES:.c=.o))
 
-.PHONY: all setup clean
+.PHONY: build test setup clean
 
-all: setup $(OBJECTS)
+build: setup $(OBJECTS)
+
+test:
+	@make -C $(BASE) test
+
+setup:
+	@make -C $(BASE) setup
+
+clean:
+	@make -C $(BASE) clean
 
 $(OBJ_DIR)/%.o: %.c $(INCLUDE)
 	$(CC) $(CFLAGS) -c -o $@ $<
 
-setup:
-	@cd $(BASE) && make setup
-
-clean:
-	@cd $(BASE) && make clean
