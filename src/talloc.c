@@ -135,6 +135,28 @@ void *trealloc(void *usr, size_t size) {
 }
 
 /**
+ * Duplicate string
+ *
+ * @param str     string to be copied
+ * @param parent  pointer to previously talloc'ed memory chunk from which this
+ *                chunk depends, or NULL.
+ *
+ * @return pointer to the allocated memory chunk, or NULL if there was an error.
+ */
+char *tstrdup(const char *str, void *parent) {
+    size_t size;
+    char *copy;
+
+    size = strlen(str) + 1;
+    if ((copy = talloc(size, parent)) == NULL) {
+        return NULL;
+    }
+    memcpy(copy, str, size);
+
+    return copy;
+}
+
+/**
  * Deallocate all the descendants of parent(mem) recursively.
  *
  * @param mem  pointer to previously talloc'ed memory chunk.
