@@ -214,8 +214,7 @@ void talloc_set_parent(void *mem, void *parent) {
 
         if (!is_first(mem))
             next(prev(mem)) = next(mem);
-
-        if (is_first(mem))
+        else
             child(parent(mem)) = next(mem);
     }
 
